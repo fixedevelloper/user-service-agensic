@@ -17,7 +17,7 @@ class CountryController extends Controller
     public function index()
     {
         $countries = Country::with('operators')
-            ->where('status', 1)
+            ->where('status', true)
             ->get();
 
         return response()->json([
