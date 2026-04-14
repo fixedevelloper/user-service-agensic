@@ -103,4 +103,9 @@ class AuthController extends Controller
 
         return response()->json($user);
     }
+    public function getUsers(Request $request)
+    {
+        $users=User::with('country')->get();
+        return Helpers::success($users);
+    }
 }

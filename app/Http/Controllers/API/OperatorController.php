@@ -69,7 +69,7 @@ class OperatorController extends Controller
             $path = $request->file('logo')->store('operators', 'public');
             $data['logo'] = $path;
         }
-
+        $data['status']= $data['status']=='active'?1:0;
         $operator = Operator::create($data);
 
         return Helpers::success($operator);
@@ -95,7 +95,7 @@ class OperatorController extends Controller
             $path = $request->file('logo')->store('operators', 'public');
             $data['logo'] = $path;
         }
-
+        $data['status']= $data['status']=='active'?1:0;
         $operator->update($data);
 
         return Helpers::success($operator);

@@ -14,6 +14,7 @@ Route::resource('countries', CountryController::class);
 Route::resource('operators', OperatorController::class);
 Route::get('operators/countries/{country_id}', [OperatorController::class, 'operatorbyCountry']);
 Route::get('operators-country-code', [OperatorController::class, 'getOperatorsList']);
+Route::get('/users', [AuthController::class, 'getUsers']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);

@@ -21,4 +21,5 @@ Route::middleware(['auth.api'])->group(function () {
         ]);
     });
     Route::get('/users/{id}', [AuthController::class, 'me']);
+
 });

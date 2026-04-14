@@ -43,7 +43,7 @@ class CountryController extends Controller
             $data['flag'] = $path;
         }
 
-        $data['status']= $data['status']=='active';
+        $data['status']= $data['status']=='active'?1:0;
 
         $country = Country::create($data);
 
@@ -72,7 +72,7 @@ class CountryController extends Controller
             $path = $request->file('flag')->store('flags', 'public');
             $data['flag'] = $path;
         }
-        $data['status']= $data['status']=='active';
+        $data['status']= $data['status']=='active'?1:0;
         $country->update($data);
 
         return response()->json($country);
