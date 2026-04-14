@@ -6,11 +6,13 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helpers;
+use http\Exception;
 use Illuminate\Http\Request;
 use App\Models\User;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -49,33 +51,68 @@ class AuthController extends Controller
         ]);
     }
 
-    // -----------------------------
-    // Login
-    // -----------------------------
+
     public function login(Request $request)
     {
-
+        Log::info("Utilisateur connecté : ", ['data' => $request->all()]);
+        // 1. Validation des champs
         $request->validate([
-            'phone'=>'required|string',
-            'password'=>'required|string',
+            'phone' => 'required|string',
+            'password' => 'required|string',
         ]);
-        $user = User::where('phone',$request->phone)->first();
 
-        if(!$user || !Hash::check($request->password,$user->password)){
-            throw ValidationException::withMessages([
-                'phone'=>['Numéro ou mot de passe incorrect.']
+        try {
+            // 2. Recherche de l'utilisateur
+            $user = User::where('phone', $request->phone)->first();
+
+            // 3. Vérification des identifiants
+            if (!$user || !Hash::check($request->password, $user->password)) {
+                // LOG : Tentative de connexion échouée (utile pour détecter les attaques brute force)
+                Log::warning("Échec de connexion pour le téléphone : {$request->phone}", [
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->header('User-Agent')
+                ]);
+
+                throw ValidationException::withMessages([
+                    'phone' => ['Les identifiants fournis sont incorrects.']
+                ]);
+            }
+
+            // 4. Gestion du Token (Sanctum)
+            $token = $user->createToken('api_token')->plainTextToken;
+
+            // 5. Mise à jour des infos de connexion
+            $user->update([
+                'last_login_at' => now(),
+                // 'last_login_ip' => $request->ip() // Optionnel : si vous avez cette colonne
             ]);
+
+            // LOG : Succès
+            Log::info("Utilisateur connecté : ID {$user->id}", ['phone' => $user->phone]);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'user' => $user,
+                    'token' => $token
+                ]
+            ]);
+
+        } catch (ValidationException $e) {
+            // On laisse Laravel gérer les erreurs de validation (422)
+            throw $e;
+        } catch (Exception $e) {
+            // 6. Gestion des erreurs critiques (BDD, serveur, etc.)
+            Log::error("Erreur critique lors du login : " . $e->getMessage(), [
+                'phone' => $request->phone,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une erreur technique est survenue. Veuillez réessayer plus tard.'
+            ], 500);
         }
-
-        $token = $user->createToken('api_token')->plainTextToken;
-
-        $user->update(['last_login_at'=>now()]);
-        return response()->json([
-           'data'=>[
-               'user'=>$user,
-               'token'=>$token
-           ]
-        ]);
     }
 
     // -----------------------------
