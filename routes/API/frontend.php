@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CountryController;
 use App\Http\Controllers\API\DepositController;
+use App\Http\Controllers\API\DepositUssdController;
 use App\Http\Controllers\API\OperatorController;
 use App\Http\Controllers\API\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -18,7 +19,9 @@ Route::get('/users', [AuthController::class, 'getUsers']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout']);
     Route::get('me', [AuthController::class, 'me']);
-
+    Route::get('profile', [AuthController::class, 'profile']);
+    Route::post('change_password', [AuthController::class, 'changePassword']);
+    Route::post('profile/update', [AuthController::class, 'updateProfile']);
     Route::prefix('services')->group(function () {
 
         // 🔥 Mobile
@@ -43,3 +46,9 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 Route::post('webhook', [DepositController::class, 'webhook'])->name('deposit.webhook');
+Route::apiResource('deposit_ussds', DepositUssdController::class);
+
+Route::post(
+    'deposit_ussds/{deposit_ussd}/upload-proof',
+    [DepositUssdController::class, 'uploadProof']
+);

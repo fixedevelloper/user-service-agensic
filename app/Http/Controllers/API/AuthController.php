@@ -6,10 +6,13 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helpers;
+use App\Http\Requests\UpdatePasswordRequest;
+use App\Http\Requests\UpdateProfileRequest;
 use http\Exception;
 use Illuminate\Http\Request;
 use App\Models\User;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -137,12 +140,63 @@ class AuthController extends Controller
     {
         $userId = $request->header('X-User-Id');
         $user = User::find($userId);
-
-        return response()->json($user);
+        return Helpers::success($user);
     }
     public function getUsers(Request $request)
     {
         $users=User::with('country')->get();
         return Helpers::success($users);
+    }
+    public function changePassword(UpdatePasswordRequest $request)
+    {
+        logger($request->all());
+        try {
+            $user = auth()->user();
+
+            // Mise à jour
+            $user->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Mot de passe modifié avec succès.'
+            ]);
+
+        } catch (\Exception $e) {
+            // Log l'erreur pour le développeur
+            Log::error("Erreur changement mot de passe ID {$user->id}: " . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une erreur interne est survenue. Veuillez réessayer plus tard.'
+            ], 500);
+        }
+    }
+    public function updateProfile(UpdateProfileRequest $request)
+    {
+        try {
+            $user = $request->user();
+
+            // Mise à jour des données validées
+            $user->update($request->validated());
+
+            // On recharge la relation country pour renvoyer le profil complet à Android
+            $user->load('country');
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Profil mis à jour avec succès.',
+                'data' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("Erreur Update Profile ID {$user->id}: " . $e->getMessage());
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Impossible de mettre à jour le profil.'
+            ], 500);
+        }
     }
 }
