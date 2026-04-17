@@ -34,5 +34,14 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'whatsapp' => [
+        'token' => env('WHATSAPP_ACCESS_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'version' => 'v19.0',
+    ],
+    'telegram-bot-api' => [
+        'token' => env('TELEGRAM_BOT_TOKEN'),
+        'group_id' => env('TELEGRAM_GROUP_ID'),
+    ],
 
 ];

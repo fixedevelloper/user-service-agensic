@@ -7,10 +7,13 @@ use App\Http\Helpers\Helpers;
 use App\Models\Deposit;
 use App\Models\Country;
 use App\Models\Operator;
+use App\Notifications\DepositProcessed;
+use App\Notifications\TransactionProcessed;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
@@ -101,7 +104,8 @@ class DepositController extends Controller
             if (!isset($data['payment_url'])) {
                 throw new \Exception('Réponse invalide paiement');
             }
-
+            Notification::route('telegram', config('services.telegram-bot-api.group_id'))
+                ->notify(new DepositProcessed($deposit));
             DB::commit();
 
             return response()->json([

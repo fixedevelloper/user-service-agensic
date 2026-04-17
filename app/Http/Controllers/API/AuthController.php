@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Helpers\Helpers;
 use App\Http\Requests\UpdatePasswordRequest;
 use App\Http\Requests\UpdateProfileRequest;
+use App\Http\Resources\UserResource;
 use http\Exception;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -134,7 +135,7 @@ class AuthController extends Controller
     public function me(Request $request,$id)
     {
         $user=User::with('country')->find($id);
-        return Helpers::success($user);
+        return Helpers::success(new UserResource($user));
     }
     public function profile(Request $request)
     {

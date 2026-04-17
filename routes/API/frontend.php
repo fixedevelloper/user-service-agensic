@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\CountryController;
 use App\Http\Controllers\API\DepositController;
 use App\Http\Controllers\API\DepositUssdController;
+use App\Http\Controllers\API\ForgetPasswordController;
 use App\Http\Controllers\API\OperatorController;
 use App\Http\Controllers\API\ServiceController;
 use Illuminate\Support\Facades\Route;
@@ -52,3 +53,15 @@ Route::post(
     'deposit_ussds/{deposit_ussd}/upload-proof',
     [DepositUssdController::class, 'uploadProof']
 );
+Route::prefix('password')->group(function () {
+
+    // Étape 1 : Demande d'OTP (WhatsApp)
+    Route::post('/forgot', [ForgetPasswordController::class, 'sendOtp']);
+
+    // Étape 2 : Vérification du code (Optionnel mais recommandé pour l'UX Android)
+    Route::post('/verify', [ForgetPasswordController::class, 'verifyOtp']);
+
+    // Étape 3 : Validation du nouveau mot de passe
+    Route::post('/reset', [ForgetPasswordController::class, 'resetPassword']);
+
+});

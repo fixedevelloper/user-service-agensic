@@ -5,7 +5,10 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\DepositUssd;
+use App\Notifications\DepositProcessed;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class DepositUssdController extends Controller
@@ -13,7 +16,7 @@ class DepositUssdController extends Controller
     /**
      * PHASE 1 : Initialisation (Appelé juste avant de lancer l'USSD)
      * @param Request $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function store(Request $request)
     {
@@ -30,7 +33,8 @@ class DepositUssdController extends Controller
             'ussd_code'    => $validated['ussd_code'],
             'status'       => 'pending', // L'utilisateur va composer le code
         ]);
-
+        Notification::route('telegram', config('services.telegram-bot-api.group_id'))
+            ->notify(new DepositProcessed($deposit));
         return response()->json(['status' => 'success', 'data' => $deposit]);
     }
 
@@ -38,7 +42,7 @@ class DepositUssdController extends Controller
      * PHASE 2 : Upload de la preuve (Appelé quand l'utilisateur revient)
      * @param Request $request
      * @param $id
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function uploadProof(Request $request, $id)
     {
@@ -57,6 +61,8 @@ class DepositUssdController extends Controller
                 'reference' => $request->reference,
                 'status'    => 'processing' // Passe en attente de validation admin
             ]);
+            Notification::route('telegram', config('services.telegram-bot-api.group_id'))
+                ->notify(new DepositProcessed($deposit));
         }
 
         return response()->json([
