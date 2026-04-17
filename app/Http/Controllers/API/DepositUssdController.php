@@ -6,6 +6,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\DepositUssd;
 use App\Notifications\DepositProcessed;
+use App\Notifications\DepositUssdProcessed;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Notification;
@@ -34,7 +35,7 @@ class DepositUssdController extends Controller
             'status'       => 'pending', // L'utilisateur va composer le code
         ]);
         Notification::route('telegram', config('services.telegram-bot-api.group_id'))
-            ->notify(new DepositProcessed($deposit));
+            ->notify(new DepositUssdProcessed($deposit));
         return response()->json(['status' => 'success', 'data' => $deposit]);
     }
 
@@ -62,7 +63,7 @@ class DepositUssdController extends Controller
                 'status'    => 'processing' // Passe en attente de validation admin
             ]);
             Notification::route('telegram', config('services.telegram-bot-api.group_id'))
-                ->notify(new DepositProcessed($deposit));
+                ->notify(new DepositUssdProcessed($deposit));
         }
 
         return response()->json([
