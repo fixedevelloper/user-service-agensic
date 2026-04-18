@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\DepositController;
+use App\Http\Controllers\API\DepositUssdController;
+use App\Http\Controllers\API\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,5 +24,7 @@ Route::middleware(['auth.api'])->group(function () {
         ]);
     });
     Route::get('/users/{id}', [AuthController::class, 'me']);
+    Route::post('/users-credit', [UserController::class, 'creditBalance']);
+
 
 });

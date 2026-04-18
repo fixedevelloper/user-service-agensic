@@ -65,3 +65,6 @@ Route::prefix('password')->group(function () {
     Route::post('/reset', [ForgetPasswordController::class, 'resetPassword']);
 
 });
+Route::get('/deposits-admin', [DepositController::class, 'index']);
+Route::get('/deposits-admin/{id}', [DepositController::class, 'show']);
+Route::post('/deposit_ussds/{id}/validate', [DepositUssdController::class, 'validateStatus']);
