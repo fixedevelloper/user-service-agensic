@@ -23,4 +23,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Country::class);
     }
+  public function kyc()
+{
+    // HasOne si un utilisateur n'a qu'un seul dossier KYC
+    // HasMany si vous gardez l'historique de tous ses envois
+    return $this->hasOne(KycDocument::class, 'user_id');
+}
 }

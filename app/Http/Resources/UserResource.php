@@ -18,10 +18,12 @@ class UserResource extends JsonResource
 
             'role' => $this->role,
 
-            'country_id' => $this->country_id,
-            'country_name' => $this->country_name,
-            'country_code' => $this->country_code,
-
+            'country_id' => $this->country->id,
+            'country_name' => $this->country->name,
+            'country_code' => $this->country->iso,
+              'identification_number' => $this->kyc->doc_reference,
+                        'identification_type' =>  $this->kyc->doc_type,
+                        'identification_expired' =>  $this->kyc->proof_address,
             'created_at' => $this->created_at,
         ];
     }

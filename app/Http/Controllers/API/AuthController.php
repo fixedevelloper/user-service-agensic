@@ -12,6 +12,7 @@ use App\Http\Resources\UserResource;
 use http\Exception;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\KycDocument;
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -134,18 +135,18 @@ class AuthController extends Controller
     // -----------------------------
     public function me(Request $request,$id)
     {
-        $user=User::with('country')->find($id);
+        $user=User::with(['country','kyc'])->find($id);
         return Helpers::success(new UserResource($user));
     }
     public function profile(Request $request)
     {
         $userId = $request->header('X-User-Id');
-        $user = User::find($userId);
-        return Helpers::success($user);
+        $user = User::with(['country','kyc'])->find($userId);
+       return Helpers::success(new UserResource($user));
     }
     public function getUsers(Request $request)
     {
-        $users=User::with('country')->get();
+        $users=User::with(['country','kyc'])->get();
         return Helpers::success($users);
     }
     public function changePassword(UpdatePasswordRequest $request)
@@ -181,9 +182,17 @@ class AuthController extends Controller
 
             // Mise à jour des données validées
             $user->update($request->validated());
+            $kyc = KycDocument::updateOrCreate(
+                    ['user_id' => $user->id],
+                    [
+                        'doc_type' => $request->identification_type,
+                        'doc_reference' => $request->identification_number,
+                        'proof_address'=>$request->identification_expired
+                    ]
+                );;
 
             // On recharge la relation country pour renvoyer le profil complet à Android
-            $user->load('country');
+            $user->load(['country','kyc']);
 
             return response()->json([
                 'status' => 'success',
