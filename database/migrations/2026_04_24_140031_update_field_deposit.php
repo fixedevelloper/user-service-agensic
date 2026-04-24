@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-           Schema::create('deposits', function (Blueprint $table) {
+           Schema::table('deposits', function (Blueprint $table) {
            $table->string('provider')->nullable();
             $table->string('provider_token')->nullable();
             $table->json('meta_data')->nullable();
