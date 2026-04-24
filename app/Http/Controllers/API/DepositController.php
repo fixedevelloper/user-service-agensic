@@ -118,74 +118,15 @@ class DepositController extends Controller
      */
     public function createDeposit(Request $request)
     {
-        $request->validate([
-            'country_id' => 'required|exists:countries,id',
-            'operator_id' => 'required|exists:operators,id',
-            'amount' => 'required|numeric|min:1',
-        ]);
+       $deposit = Deposit::create([
+        'user_id'     => $request->user_id,
+        'amount'      => $request->amount,
+        'reference'   => $request->reference,
+        'operator_id' => $request->operator_id,
+        'status'      => 'pending',
+    ]);
 
-        $user = Auth::user();
-
-        DB::beginTransaction();
-
-        try {
-
-            // 🔥 Génération référence
-            $reference = strtoupper(Str::random(10));
-
-            // 💾 Création dépôt (PAS DE CREDIT ICI)
-            $deposit = Deposit::create([
-                'user_id' => $user->id,
-                'operator_id' => $request->operator_id,
-                'amount' => $request->amount,
-                'status' => 'pending',
-                'reference' => $reference
-            ]);
-
-            // 📡 Appel microservice transaction
-            $response = Http::withToken(env('API_SERVICE_TOKEN'))
-                ->post(env('TRANSACTION_SERVICE_URL') . "/deposit", [
-                    'user_id' => $user->id,
-                    'phone' => $user->phone,
-                    'amount' => $request->amount,
-                    'name' => $user->name,
-                    'order_id' => $reference,
-                    'return_url' => route('deposit.return'),
-                    'webhook_url' => route('deposit.webhook'),
-                ]);
-
-            if (!$response->successful()) {
-                logger($response);
-                throw new \Exception('Erreur service paiement');
-            }
-
-            $data = $response->json();
-
-            if (!isset($data['payment_url'])) {
-                throw new \Exception('Réponse invalide paiement');
-            }
-            Notification::route('telegram', config('services.telegram-bot-api.group_id'))
-                ->notify(new DepositProcessed($deposit));
-            DB::commit();
-
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'deposit' => $deposit,
-                    'payment_url' => $data['payment_url'],
-                    'token' => $data['token'] ?? null
-                ]
-            ]);
-
-        } catch (\Exception $e) {
-
-            DB::rollBack();
-
-            return response()->json([
-                'success' => false,
-                'message' => $e->getMessage()
-            ], 500);
-        }
+    return response()->json(['success' => true]);
     }
 
     /**

@@ -133,11 +133,30 @@ class AuthController extends Controller
     // -----------------------------
     // Infos du profil connecté
     // -----------------------------
-    public function me(Request $request,$id)
-    {
-        $user=User::with(['country','kyc'])->find($id);
+public function me(Request $request, $id)
+{
+     logger("UserID found: " . $id);
+    try {
+        // 1. Utilisation de findOrFail : lève une ModelNotFoundException si l'ID n'existe pas
+        $user = User::with(['country', 'kyc'])->findOrFail($id);
+
+        $ressource=new UserResource($user);
+        // Optionnel : Log pour le debug
+        logger(json_encode($ressource));
+
         return Helpers::success(new UserResource($user));
+
+    } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        // Capture spécifique : Utilisateur non trouvé
+        logger("User not found with ID: $id");
+        return Helpers::error("Utilisateur introuvable.", 404);
+
+    } catch (\Exception $e) {
+        // Capture générale : Erreur serveur, base de données, etc.
+        logger("Error in User Controller (me): " . $e->getMessage());
+        return Helpers::error("Une erreur interne est survenue.", 500);
     }
+}
     public function profile(Request $request)
     {
         $userId = $request->header('X-User-Id');

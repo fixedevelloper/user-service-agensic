@@ -26,6 +26,6 @@ Route::middleware(['auth.api'])->group(function () {
     Route::get('/users/{id}', [AuthController::class, 'me']);
     Route::post('/users-credit', [UserController::class, 'creditBalance']);
     Route::post('/users-debit', [UserController::class, 'debitBalance']);
-
+ Route::post('/deposits', [DepositController::class, 'createDeposit']);
 
 });
