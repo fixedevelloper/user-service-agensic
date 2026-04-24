@@ -12,7 +12,7 @@ class Deposit extends Model
     protected $table = 'deposits';
 
     protected $fillable = [
-        'amount', 'operator_id', 'user_id', 'reference', 'status', 'completed_at'
+        'amount', 'operator_id', 'user_id', 'reference', 'status', 'completed_at','provider_token'
     ];
 
     protected $casts = [

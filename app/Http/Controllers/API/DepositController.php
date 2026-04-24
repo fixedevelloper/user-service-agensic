@@ -122,6 +122,7 @@ class DepositController extends Controller
         'user_id'     => $request->user_id,
         'amount'      => $request->amount,
         'reference'   => $request->reference,
+        'provider_token'=> $request->token,
         'operator_id' => $request->operator_id,
         'status'      => 'pending',
     ]);
